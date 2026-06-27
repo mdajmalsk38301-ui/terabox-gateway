@@ -187,17 +187,6 @@
           }
         }
       }
-    },
-    "/help": {
-      "get": {
-        "summary": "API Help/Documentation (JSON)",
-        "description": "Returns raw JSON documentation for all features and usage patterns.",
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
     }
   }
 }

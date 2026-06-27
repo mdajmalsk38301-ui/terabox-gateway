@@ -30,7 +30,6 @@ The API uses Flask 3.x native async support with `aiohttp` for asynchronous requ
   - `GET /api`: Unified endpoint - file listing (backward compatible) and proxy modes (resolve, lookup, stream, page, api, segment, health)
   - `GET /api2`: Retrieves file metadata and resolves direct download links
   - `GET /admin/*`: Path-based admin endpoints to inspect database records and analytics (overview, shares, files, thumbnails, kv/entry)
-  - `GET /help`: Provides inline documentation for the API
   - `GET /health`: Simple health check endpoint
   - `GET /`: API information and status
 
@@ -169,12 +168,6 @@ Simple health check endpoint that returns the current status.
 curl http://localhost:5000/health
 ```
 
-#### `GET /help` - API Documentation
-Provides detailed inline documentation and usage examples.
-
-```bash
-curl http://localhost:5000/help
-```
 
 #### `GET /docs` - Interactive Swagger UI Playground
 An interactive developer playground to browse endpoints and execute requests directly from the browser.

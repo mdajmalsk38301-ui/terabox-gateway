@@ -178,7 +178,6 @@ def index():
                 "/api": "Unified endpoint - file listing and proxy modes (resolve, page, api, stream, segment)",
                 "/api2": "Fetch files with direct download links",
                 "/health": "Health check",
-                "/help": "Detailed usage instructions",
             },
             "contact": "@Saahiyo",
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -592,113 +591,6 @@ def swagger_ui():
     </html>
     """
 
-
-
-@app.route("/help", methods=["GET"])
-def help_page():
-    """Help and documentation endpoint"""
-    return jsonify(
-        {
-            "TeraBox API Documentation": {
-                "version": "2.0",
-                "description": "Extract file information from TeraBox share links",
-                "Endpoints": {
-                    "/api": {
-                        "method": "GET",
-                        "description": "Unified endpoint - file information and proxy modes",
-                        "usage_patterns": {
-                            "file_listing": {
-                                "description": "Traditional file listing (backward compatible)",
-                                "parameters": {
-                                    "url": "Required - TeraBox share link",
-                                    "pwd": "Optional - Password for protected links",
-                                },
-                                "example": "/api?url=https://teraboxshare.com/s/1ABC...",
-                            },
-                            "proxy_modes": {
-                                "description": "Direct proxy access with multiple modes",
-                                "modes": {
-                                    "resolve": {
-                                        "description": "Auto extract jsToken + fetch share API (recommended)",
-                                        "parameters": {"surl": "Required - Short URL ID"},
-                                        "example": "/api?mode=resolve&surl=abc123",
-                                    },
-                                    "page": {
-                                        "description": "Proxy raw share HTML page",
-                                        "parameters": {"surl": "Required - Short URL ID"},
-                                        "example": "/api?mode=page&surl=abc123",
-                                    },
-                                    "api": {
-                                        "description": "Manual share API proxy (when jsToken is known)",
-                                        "parameters": {
-                                            "jsToken": "Required - JavaScript token",
-                                            "shorturl": "Required - Short URL ID",
-                                            "root": "Optional - Default: 1",
-                                            "dplogid": "Optional - Log ID",
-                                        },
-                                        "example": "/api?mode=api&jsToken=XYZ&shorturl=abc123",
-                                    },
-                                    "stream": {
-                                        "description": "Fetch and rewrite M3U8 playlist for HLS streaming",
-                                        "parameters": {
-                                            "surl": "Required - Short URL ID",
-                                            "type": "Optional - Stream quality (default: M3U8_AUTO_360)",
-                                        },
-                                        "example": "/api?mode=stream&surl=abc123&type=M3U8_AUTO_360",
-                                    },
-                                    "segment": {
-                                        "description": "Proxy media segments (.ts, .m4s)",
-                                        "parameters": {"url": "Required - Encoded segment URL"},
-                                        "example": "/api?mode=segment&url=ENCODED_URL",
-                                    },
-                                },
-                                "notes": [
-                                    "Cookies are forwarded from client request if provided",
-                                    "Use mode=resolve for most use cases",
-                                    "Stream and segment modes enable HLS video playback",
-                                ],
-                            },
-                        },
-                    },
-                    "/api2": {
-                        "method": "GET",
-                        "description": "Fetch files with direct download links",
-                        "parameters": {
-                            "url": "Required - TeraBox share link",
-                            "pwd": "Optional - Password for protected links",
-                        },
-                        "example": "/api2?url=https://teraboxshare.com/s/1ABC...",
-                    },
-                },
-                "Error Codes": {
-                    "0": "Success",
-                    "-1": "General error",
-                    "400141": "Verification required (password/captcha)",
-                },
-                "Response Format": {
-                    "success": {
-                        "status": "success",
-                        "url": "The requested URL",
-                        "files": "Array of file objects",
-                        "total_files": "Number of files",
-                        "timestamp": "ISO timestamp",
-                    },
-                    "error": {
-                        "status": "error",
-                        "message": "Error description",
-                        "errno": "Error code",
-                    },
-                },
-                "Notes": [
-                    "Cookies must be updated regularly (they expire)",
-                    "Links requiring passwords need pwd parameter",
-                    "Some links may require captcha verification",
-                    "Rate limiting may apply",
-                ],
-                "Contact": "@Saahiyo",
-            }
-        }
-    )
 
 
 if __name__ == "__main__":
