@@ -1,6 +1,12 @@
 # TeraBox Gateway API
 
-A lightweight Flask 3.x async API for extracting file information and direct download links from TeraBox share URLs.
+Fast Python gateway for extracting metadata, thumbnails and direct download links from Terabox share URLs.
+
+[![GitHub Stars](https://img.shields.io/github/stars/saahiyo/terabox-gateway?style=for-the-badge&color=gold)](https://github.com/saahiyo/terabox-gateway/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/saahiyo/terabox-gateway?style=for-the-badge&color=blue)](https://github.com/saahiyo/terabox-gateway/network/members)
+[![License](https://img.shields.io/github/license/saahiyo/terabox-gateway?style=for-the-badge&color=green)](https://github.com/saahiyo/terabox-gateway/blob/main/LICENSE)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue?style=for-the-badge&logo=python)](https://github.com/saahiyo/terabox-gateway)
+[![Deploy on Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsaahiyo%2Fterabox-gateway&env=COOKIE_JSON)
 
 ![design](https://github.com/user-attachments/assets/8129a66c-99b3-4487-9859-8ec7999a6475)
 
@@ -271,6 +277,115 @@ Both `http://` and `https://` protocols are supported.
 
 ---
 
+## Integration Examples
+
+You can easily query the gateway API using your preferred programming language. Here are examples of retrieving direct download links for a TeraBox share URL using the `/api2` endpoint:
+
+### 🐍 Python (using `requests`)
+
+```python
+import requests
+
+def get_direct_links(gateway_url, share_url):
+    response = requests.get(
+        f"{gateway_url}/api2",
+        params={"url": share_url}
+    )
+    if response.status_code == 200:
+        data = response.json()
+        if data.get("status") == "success":
+            for file in data.get("files", []):
+                print(f"File: {file['filename']}")
+                print(f"Size: {file['size']}")
+                print(f"Direct Link: {file['download_link']}\n")
+        else:
+            print("Error:", data.get("message"))
+    else:
+        print("HTTP Error:", response.status_code)
+
+# Example Usage:
+# get_direct_links("http://localhost:5000", "https://teraboxshare.com/s/1LNr3tyl5pI5KUM8BecGtyQ")
+```
+
+### 🟨 JavaScript (Node.js / Browser)
+
+```javascript
+async function getDirectLinks(gatewayUrl, shareUrl) {
+    try {
+        const response = await fetch(`${gatewayUrl}/api2?url=${encodeURIComponent(shareUrl)}`);
+        const data = await response.json();
+        
+        if (response.ok && data.status === 'success') {
+            data.files.forEach(file => {
+                console.log(`File: ${file.filename}`);
+                console.log(`Size: ${file.size}`);
+                console.log(`Direct Link: ${file.download_link}\n`);
+            });
+        } else {
+            console.error('Error:', data.message || 'Failed to resolve links');
+        }
+    } catch (error) {
+        console.error('Fetch Error:', error);
+    }
+}
+
+// Example Usage:
+// getDirectLinks("http://localhost:5000", "https://teraboxshare.com/s/1LNr3tyl5pI5KUM8BecGtyQ");
+```
+
+### 🐹 Go
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+)
+
+type FileItem struct {
+	Filename     string `json:"filename"`
+	Size         string `json:"size"`
+	DownloadLink string `json:"download_link"`
+}
+
+type APIResponse struct {
+	Status string     `json:"status"`
+	Files  []FileItem `json:"files"`
+}
+
+func getDirectLinks(gatewayURL, shareURL string) {
+	resp, err := http.Get(fmt.Sprintf("%s/api2?url=%s", gatewayURL, url.QueryEscape(shareURL)))
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	var result APIResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		fmt.Println("Decode Error:", err)
+		return
+	}
+
+	if result.Status == "success" {
+		for _, file := range result.Files {
+			fmt.Printf("File: %s\nSize: %s\nDirect Link: %s\n\n", file.Filename, file.Size, file.DownloadLink)
+		}
+	} else {
+		fmt.Println("API returned an error status")
+	}
+}
+
+func main() {
+	// getDirectLinks("http://localhost:5000", "https://teraboxshare.com/s/1LNr3tyl5pI5KUM8BecGtyQ")
+}
+```
+
+---
+
 ## Environment Variables
 
 You can configure the API using environment variables in your `.env` file:
@@ -361,7 +476,13 @@ For detailed proxy documentation, see [tboxproxy_usage.md](tboxproxy_usage.md).
 
 ### Deploy to Vercel
 
-This project is configured for easy deployment to Vercel:
+The easiest way to deploy your own instance of the TeraBox Gateway API is to use Vercel.
+
+Click the button below to clone and deploy this repository with one click:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsaahiyo%2Fterabox-gateway&env=COOKIE_JSON)
+
+Alternatively, deploy manually using the Vercel CLI:
 
 1. Install Vercel CLI (optional):
    ```bash
