@@ -27,7 +27,7 @@ The API uses Flask 3.x native async support with `aiohttp` for asynchronous requ
 - **Web API Endpoints**:
   - `GET /docs`: Interactive Swagger UI documentation playground (API playground)
   - `GET /swagger.json`: OpenAPI 3.0.0 schema specification
-  - `GET /api`: Unified endpoint - file listing, direct links (`?direct=true`), and proxy modes (resolve, lookup, stream, page, api, segment, health)
+  - `GET /api`: Unified endpoint - file listing with direct download links, and proxy modes (resolve, lookup, stream, page, api, segment, health)
   - `GET /admin/*`: Path-based admin endpoints to inspect database records and analytics (overview, shares, files, thumbnails, kv/entry)
   - `GET /health`: Simple health check endpoint
   - `GET /`: API information and status
@@ -181,25 +181,18 @@ curl http://localhost:5000/swagger.json
 ```
 
 
-#### `GET /api` - Unified Endpoint (File Listing + Direct Links + Proxy Modes)
+#### `GET /api` - Unified Endpoint (File Listing + Proxy Modes)
 
 The `/api` endpoint handles **all use cases** in one place:
 
-**Pattern 1: File Listing (Metadata Only)**
-Retrieves file metadata for a TeraBox share link.
+**Pattern 1: File Listing with Direct Download Links**
+Retrieves file metadata and resolves direct download links for a TeraBox share link.
 
 ```bash
 curl "http://localhost:5000/api?url=https://1024terabox.com/s/1LNr3tyl5pI5KUM8BecGtyQ"
 ```
 
-**Pattern 2: Direct Download Links**
-Fetch metadata **and** resolved direct download links in one call.
-
-```bash
-curl "http://localhost:5000/api?url=https://teraboxshare.com/s/XXXXXXXX&direct=true"
-```
-
-**Pattern 3: Proxy Modes**
+**Pattern 2: Proxy Modes**
 Direct access to the Cloudflare Worker proxy with multiple modes for different use cases.
 
 **Mode: `resolve` (Recommended)**
@@ -279,7 +272,7 @@ Both `http://` and `https://` protocols are supported.
 
 ## Integration Examples
 
-You can easily query the gateway API using your preferred programming language. Here are examples of retrieving direct download links for a TeraBox share URL using `/api?direct=true`:
+You can easily query the gateway API using your preferred programming language. Here are examples of retrieving direct download links for a TeraBox share URL using the `/api` endpoint:
 
 ### 🐍 Python (using `requests`)
 
@@ -289,7 +282,7 @@ import requests
 def get_direct_links(gateway_url, share_url):
     response = requests.get(
         f"{gateway_url}/api",
-        params={"url": share_url, "direct": "true"}
+        params={"url": share_url}
     )
     if response.status_code == 200:
         data = response.json()
@@ -312,7 +305,7 @@ def get_direct_links(gateway_url, share_url):
 ```javascript
 async function getDirectLinks(gatewayUrl, shareUrl) {
     try {
-        const response = await fetch(`${gatewayUrl}/api?url=${encodeURIComponent(shareUrl)}&direct=true`);
+        const response = await fetch(`${gatewayUrl}/api?url=${encodeURIComponent(shareUrl)}`);
         const data = await response.json();
         
         if (response.ok && data.status === 'success') {
@@ -357,7 +350,7 @@ type APIResponse struct {
 }
 
 func getDirectLinks(gatewayURL, shareURL string) {
-	resp, err := http.Get(fmt.Sprintf("%s/api?url=%s&direct=true", gatewayURL, url.QueryEscape(shareURL)))
+	resp, err := http.Get(fmt.Sprintf("%s/api?url=%s", gatewayURL, url.QueryEscape(shareURL)))
 	if err != nil {
 		fmt.Println("Error:", err)
 		return

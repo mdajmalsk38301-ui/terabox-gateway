@@ -29,9 +29,7 @@ from config import (
 )
 from utils import is_valid_share_url, _proxy_request
 from terabox_client import (
-    fetch_download_link,
     fetch_direct_links,
-    _gather_format_file_info,
     _normalize_api2_items,
 )
 from rate_limiter import rate_limit
@@ -118,7 +116,7 @@ def index():
                 "/": "API information",
                 "/docs": "Interactive Swagger UI documentation (API playground)",
                 "/swagger.json": "OpenAPI 3.0.0 specification (JSON)",
-                "/api": "Unified endpoint - file listing, direct links (?direct=true), and proxy modes",
+                "/api": "Unified endpoint - file listing with direct download links, and proxy modes",
                 "/health": "Health check",
             },
             "contact": "@Saahiyo",
@@ -269,46 +267,10 @@ async def api():
         password = request.args.get("pwd", "")
         logging.info(f"API request for URL: {url}")
 
-        # Determine if direct links resolution is requested
-        direct = request.args.get("direct", "0") in ("1", "true", "True")
-
-        if direct:
-            link_data = await fetch_direct_links(url, password)
-            if isinstance(link_data, dict) and "error" in link_data:
-                return (
-                    jsonify(
-                        {
-                            "status": "error",
-                            "url": url,
-                            "error": link_data["error"],
-                            "errno": link_data.get("errno"),
-                        }
-                    ),
-                    500,
-                )
-            if link_data:
-                formatted_files = await _normalize_api2_items(link_data)
-                response_time = format_response_time(time.time() - start_time)
-                return jsonify(
-                    {
-                        "status": "success",
-                        "url": url,
-                        "files": formatted_files,
-                        "total_files": len(formatted_files),
-                        "response_time": response_time,
-                        "timestamp": datetime.now(timezone.utc).isoformat(),
-                    }
-                )
-            else:
-                return (
-                    jsonify({"status": "error", "message": "No files found", "url": url}),
-                    404,
-                )
-
         # Check cache first
         cached = cache.get(url, password)
         if cached is not None:
-            formatted_files = await _gather_format_file_info(cached)
+            formatted_files = await _normalize_api2_items(cached)
             response_time = format_response_time(time.time() - start_time)
             resp_dict = {
                 "status": "success",
@@ -318,14 +280,14 @@ async def api():
                 "response_time": response_time,
                 "cached": True,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
-                "used_cookies": getattr(cached, "used_cookies", False),
+                "used_cookies": getattr(formatted_files, "used_cookies", False),
             }
-            if getattr(cached, "fallback_no_cookie", False):
+            if getattr(formatted_files, "fallback_no_cookie", False):
                 resp_dict["fallback_no_cookie"] = True
                 resp_dict["warning"] = "Cookies were rate-limited or invalid. Resolved anonymously without cookies. Download links may be missing."
             return jsonify(resp_dict)
 
-        link_data = await fetch_download_link(url, password)
+        link_data = await fetch_direct_links(url, password)
 
         # Check if error occurred
         if isinstance(link_data, dict) and "error" in link_data:
@@ -347,20 +309,19 @@ async def api():
         # Format file information
         if link_data:
             cache.put(url, link_data, password)
-            formatted_files = await _gather_format_file_info(link_data)
+            formatted_files = await _normalize_api2_items(link_data)
             response_time = format_response_time(time.time() - start_time)
 
             resp_dict = {
                 "status": "success",
-                # "used_cookie": cookies.get("ndus", ""), # Removed for privacy
                 "url": url,
                 "files": formatted_files,
                 "total_files": len(formatted_files),
                 "response_time": response_time,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
-                "used_cookies": getattr(link_data, "used_cookies", False),
+                "used_cookies": getattr(formatted_files, "used_cookies", False),
             }
-            if getattr(link_data, "fallback_no_cookie", False):
+            if getattr(formatted_files, "fallback_no_cookie", False):
                 resp_dict["fallback_no_cookie"] = True
                 resp_dict["warning"] = "Cookies were rate-limited or invalid. Resolved anonymously without cookies. Download links may be missing."
 

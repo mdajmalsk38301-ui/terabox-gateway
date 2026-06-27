@@ -296,7 +296,11 @@ async def fetch_direct_links(
             headers=headers,
             timeout=aiohttp.ClientTimeout(total=30, connect=10),
         ) as session:
-            results = []
+            results = FileList()
+            if hasattr(files, "fallback_no_cookie"):
+                results.fallback_no_cookie = files.fallback_no_cookie
+            if hasattr(files, "used_cookies"):
+                results.used_cookies = files.used_cookies
             for item in files or []:
                 # Ensure each item is a dict; skip otherwise
 
@@ -366,7 +370,11 @@ async def _normalize_api2_items(items: List[Dict[str, Any]]) -> List[Dict[str, A
     Returns:
         List[Dict[str, Any]]: Normalized list of file information
     """
-    out: List[Dict[str, Any]] = []
+    out = FileList()
+    if hasattr(items, "fallback_no_cookie"):
+        out.fallback_no_cookie = items.fallback_no_cookie
+    if hasattr(items, "used_cookies"):
+        out.used_cookies = items.used_cookies
     for item in items or []:
         try:
             if not isinstance(item, dict):
