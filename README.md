@@ -5,18 +5,20 @@ Fast Python gateway for extracting metadata, thumbnails and direct download link
 [![GitHub Stars](https://img.shields.io/github/stars/saahiyo/terabox-gateway?style=for-the-badge&color=gold)](https://github.com/saahiyo/terabox-gateway/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/saahiyo/terabox-gateway?style=for-the-badge&color=blue)](https://github.com/saahiyo/terabox-gateway/network/members)
 [![License](https://img.shields.io/github/license/saahiyo/terabox-gateway?style=for-the-badge&color=green)](https://github.com/saahiyo/terabox-gateway/blob/main/LICENSE)
-[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue?style=for-the-badge&logo=python)](https://github.com/saahiyo/terabox-gateway)
+[![PyPI Package](https://img.shields.io/pypi/v/terabox-gateway?style=for-the-badge&logo=pypi&color=orange)](https://pypi.org/project/terabox-gateway/)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue?style=for-the-badge&logo=python)](https://github.com/saahiyo/terabox-gateway)
 [![Deploy on Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsaahiyo%2Fterabox-gateway&env=COOKIE_JSON)
 
 ![design](https://github.com/user-attachments/assets/8129a66c-99b3-4487-9859-8ec7999a6475)
 
 
-This project provides:
-- **Interactive Swagger Playground** at `/docs` for testing endpoints directly in the browser
-- **Web API** with endpoints for listing files and retrieving direct links
-- **Unified Cloudflare Worker Proxy** for optimized TeraBox API access
-- **Vercel-ready deployment** configuration
-- **Flexible cookie authentication** with support for simple string or JSON formats
+This project is available as a **PyPI package** for direct integration into your Python applications, or it can be run as a standalone API gateway. It provides:
+- **PyPI Library Integration**: Easily import package modules like the client directly in your Python code.
+- **Interactive Swagger Playground**: Access `/docs` for testing endpoints directly in the browser.
+- **Web API**: Exposes endpoints for listing files and retrieving direct links.
+- **Unified Cloudflare Worker Proxy**: Optimized TeraBox API access handling token resolution.
+- **Vercel-Ready Deployment**: Ready-to-go serverless hosting configuration.
+- **Flexible Cookie Authentication**: Simple string or JSON formatting for upstream auth.
 
 The API uses Flask 3.x native async support with `aiohttp` for asynchronous requests and leverages a unified Cloudflare Worker proxy with mode-based operations for efficient TeraBox API interaction.
 
