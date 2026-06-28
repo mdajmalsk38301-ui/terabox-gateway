@@ -78,14 +78,6 @@ def add_cors_headers(resp: Response) -> Response:
     return resp
 
 
-# Optional blueprint registration: if endpoints.bp exists, register it.
-try:
-    from .endpoints import bp as endpoints_bp  # type: ignore
-
-    app.register_blueprint(endpoints_bp)
-except ImportError:
-    # No blueprint found; continue with routes defined below
-    pass
 
 
 # =============== API ROUTES ===============

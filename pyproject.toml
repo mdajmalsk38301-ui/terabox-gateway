@@ -35,8 +35,10 @@ terabox-gateway = "terabox_gateway.main:cli"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["terabox_gateway", "terabox_gateway.endpoints"]
 include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.setuptools.package-data]
 "terabox_gateway" = ["swagger/swagger.json"]
