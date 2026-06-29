@@ -64,7 +64,8 @@ async def fetch_download_link(
             is_last_attempt = (idx == len(attempts) - 1)
             try:
                 # Use unified proxy with mode=resolve for automatic token extraction and API call
-                async with aiohttp.ClientSession(cookies=cookies_to_send, headers=headers) as session:
+                connector = aiohttp.TCPConnector(resolver=aiohttp.ThreadedResolver())
+                async with aiohttp.ClientSession(connector=connector, cookies=cookies_to_send, headers=headers) as session:
                     params = {
                         "mode": PROXY_MODE_RESOLVE,
                         "surl": surl,
@@ -293,7 +294,9 @@ async def fetch_direct_links(
         # Load cookies for the session (previous code referenced undefined `cookies`)
         session_cookies = load_cookies()
 
+        connector = aiohttp.TCPConnector(resolver=aiohttp.ThreadedResolver())
         async with aiohttp.ClientSession(
+            connector=connector,
             cookies=session_cookies,
             headers=headers,
             timeout=aiohttp.ClientTimeout(total=30, connect=10),

@@ -196,7 +196,8 @@ async def _proxy_request(url: str, params: dict, cookies: dict, req_headers: dic
                 if k.lower() in ["x-admin-key", "authorization"]:
                     proxy_headers[k] = v
 
-        async with aiohttp.ClientSession(cookies=cookies, headers=proxy_headers) as session:
+        connector = aiohttp.TCPConnector(resolver=aiohttp.ThreadedResolver())
+        async with aiohttp.ClientSession(connector=connector, cookies=cookies, headers=proxy_headers) as session:
             async with request_with_retry(session, "GET", url, params=params) as response:
                 content = await response.read()
                 
