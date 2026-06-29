@@ -12,7 +12,7 @@ from urllib.parse import parse_qs, urlparse
 import aiohttp
 
 from .config import headers, load_cookies
-from .utils import find_between, extract_thumbnail_dimensions, get_formatted_size
+from .utils import find_between, extract_thumbnail_dimensions, get_formatted_size, request_with_retry
 
 
 class FileList(list):
@@ -75,7 +75,7 @@ async def fetch_download_link(
                     
                     logging.info(f"Fetching file list from unified proxy (mode=resolve, attempt={idx+1}): {PROXY_BASE_URL}")
                     
-                    async with session.get(PROXY_BASE_URL, params=params) as response:
+                    async with request_with_retry(session, "GET", PROXY_BASE_URL, params=params) as response:
                         # Handle non-200 responses
                         if response.status != 200:
                             error_text = await response.text()
@@ -207,7 +207,7 @@ async def fetch_download_link(
                             if password:
                                 dir_params["pwd"] = password
                             
-                            async with session.get(PROXY_BASE_URL, params=dir_params) as dir_response:
+                            async with request_with_retry(session, "GET", PROXY_BASE_URL, params=dir_params) as dir_response:
                                 if dir_response.status != 200:
                                     logging.warning("Failed to fetch directory contents, returning folder info")
                                     result_files = FileList(files)
@@ -320,8 +320,8 @@ async def fetch_direct_links(
 
                 if dlink:
                     try:
-                        async with session.head(
-                            dlink, allow_redirects=False
+                        async with request_with_retry(
+                            session, "HEAD", dlink, allow_redirects=False
                         ) as response:
                             direct_link = response.headers.get("Location")
 

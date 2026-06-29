@@ -1,6 +1,6 @@
 # TeraBox Gateway API
 
-Fast Python gateway for extracting metadata, thumbnails and direct download links from Terabox share URLs.
+Fast Python gateway for extracting metadata, thumbnails, direct download links, and HLS streaming support from TeraBox share URLs.
 
 [![GitHub Stars](https://img.shields.io/github/stars/saahiyo/terabox-gateway?style=for-the-badge&color=gold)](https://github.com/saahiyo/terabox-gateway/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/saahiyo/terabox-gateway?style=for-the-badge&color=blue)](https://github.com/saahiyo/terabox-gateway/network/members)

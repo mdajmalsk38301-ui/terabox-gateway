@@ -57,6 +57,13 @@ headers: Dict[str, str] = {
 }
 
 
+# HTTP Request Retry Configuration
+HTTP_MAX_RETRIES: int = int(os.getenv("HTTP_MAX_RETRIES", "3"))
+HTTP_INITIAL_DELAY: float = float(os.getenv("HTTP_INITIAL_DELAY", "0.5"))
+HTTP_BACKOFF_FACTOR: float = float(os.getenv("HTTP_BACKOFF_FACTOR", "2.0"))
+
+
+
 @functools.lru_cache(maxsize=1)
 def load_cookies() -> dict[str, str]:
     """Load cookies from environment variables or a local file.

@@ -4,12 +4,20 @@ This module contains helper functions used across the application
 for string manipulation, formatting, and validation.
 """
 
+import asyncio
+import contextlib
 import logging
+import random
 from typing import Optional, Union
 from urllib.parse import parse_qs, urlparse
 import aiohttp
 
-from .config import ALLOWED_HOSTS
+from .config import (
+    ALLOWED_HOSTS,
+    HTTP_MAX_RETRIES,
+    HTTP_INITIAL_DELAY,
+    HTTP_BACKOFF_FACTOR,
+)
 
 
 def is_valid_share_url(u: str) -> bool:
@@ -104,6 +112,70 @@ def get_formatted_size(size_bytes: Union[int, str]) -> str:
         return "Unknown"
 
 
+@contextlib.asynccontextmanager
+async def request_with_retry(
+    session: aiohttp.ClientSession,
+    method: str,
+    url: str,
+    max_retries: Optional[int] = None,
+    initial_delay: Optional[float] = None,
+    backoff_factor: Optional[float] = None,
+    retry_statuses: tuple = (429, 502, 503, 504),
+    **kwargs
+):
+    """Context manager to execute HTTP requests with exponential backoff and retries.
+    
+    Retries on specified status codes and transient network exceptions.
+    """
+    if max_retries is None:
+        max_retries = HTTP_MAX_RETRIES
+    if initial_delay is None:
+        initial_delay = HTTP_INITIAL_DELAY
+    if backoff_factor is None:
+        backoff_factor = HTTP_BACKOFF_FACTOR
+
+    for attempt in range(max_retries + 1):
+        response = None
+        try:
+            logging.debug(f"HTTP request: {method} {url} (attempt {attempt + 1}/{max_retries + 1})")
+            response = await session.request(method, url, **kwargs)
+            
+            if response.status in retry_statuses and attempt < max_retries:
+                # Read content to close connection properly (prevent connection leak)
+                await response.read()
+                response.close()
+                
+                # Exponential backoff with random jitter (0 to 100ms)
+                delay = initial_delay * (backoff_factor ** attempt) + random.uniform(0, 0.1)
+                logging.warning(
+                    f"HTTP {response.status} from {url}. Attempt {attempt + 1}/{max_retries + 1}. "
+                    f"Retrying in {delay:.2f}s..."
+                )
+                await asyncio.sleep(delay)
+                continue
+            
+            # Yield response within try...finally to ensure it is always closed
+            try:
+                yield response
+            finally:
+                response.close()
+            return
+            
+        except (aiohttp.ClientError, asyncio.TimeoutError, TimeoutError) as e:
+            if response is not None:
+                response.close()
+                
+            if attempt < max_retries:
+                delay = initial_delay * (backoff_factor ** attempt) + random.uniform(0, 0.1)
+                logging.warning(
+                    f"Network error ({e.__class__.__name__}: {e}) for {url}. "
+                    f"Attempt {attempt + 1}/{max_retries + 1}. Retrying in {delay:.2f}s..."
+                )
+                await asyncio.sleep(delay)
+                continue
+            raise
+
+
 async def _proxy_request(url: str, params: dict, cookies: dict, req_headers: dict = None) -> dict:
     """Internal helper to make async proxy requests.
     
@@ -125,7 +197,7 @@ async def _proxy_request(url: str, params: dict, cookies: dict, req_headers: dic
                     proxy_headers[k] = v
 
         async with aiohttp.ClientSession(cookies=cookies, headers=proxy_headers) as session:
-            async with session.get(url, params=params) as response:
+            async with request_with_retry(session, "GET", url, params=params) as response:
                 content = await response.read()
                 
                 # Determine content type
