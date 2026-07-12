@@ -6,6 +6,7 @@ Business logic has been separated into dedicated modules:
 - config.py: Configuration and constants
 - utils.py: Utility functions
 - terabox_client.py: TeraBox API client logic
+- terabox_direct.py: Direct TeraBox extraction (no third-party proxy)
 """
 
 from flask import Flask, request, jsonify, Response, send_from_directory
@@ -33,6 +34,7 @@ from .terabox_client import (
     fetch_direct_links,
     _normalize_api2_items,
 )
+from .terabox_direct import fetch_download_link_direct
 from .rate_limiter import rate_limit
 from . import cache
 
@@ -303,7 +305,7 @@ async def api():
                 resp_dict["warning"] = "Cookies were rate-limited or invalid. Resolved anonymously without cookies. Download links may be missing."
             return jsonify(resp_dict)
 
-        link_data = await fetch_download_link(url, password)
+        link_data = await fetch_download_link_direct(url, password)
 
         # Check if error occurred
         if isinstance(link_data, dict) and "error" in link_data:
