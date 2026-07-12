@@ -145,13 +145,15 @@ async def _try_extract_with_cookie(
     results = []
     for item in raw_files:
         thumbs = item.get("thumbs") or {}
+        thumb_url = thumbs.get("url3", "")
         results.append({
             "filename": item.get("server_filename", "Unknown"),
             "size": get_formatted_size(item.get("size", 0)),
             "size_bytes": item.get("size", 0),
             "download_link": item.get("dlink", ""),
             "is_directory": item.get("isdir") == "1",
-            "thumbnails": {"original": thumbs.get("url3", "")} if thumbs.get("url3") else {},
+            "thumbnails": {"original": thumb_url} if thumb_url else {},
+            "thumbnail": thumb_url,
             "path": item.get("path", ""),
             "fs_id": item.get("fs_id", ""),
         })
