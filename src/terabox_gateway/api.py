@@ -35,6 +35,7 @@ from .terabox_client import (
     _normalize_api2_items,
 )
 from .terabox_direct import fetch_download_link_direct
+from .terabox_dl_lib import fetch_via_teraboxdl
 from .rate_limiter import rate_limit
 from . import cache
 
@@ -305,7 +306,10 @@ async def api():
                 resp_dict["warning"] = "Cookies were rate-limited or invalid. Resolved anonymously without cookies. Download links may be missing."
             return jsonify(resp_dict)
 
-        link_data = await fetch_download_link_direct(url, password)
+        link_data = await fetch_via_teraboxdl(url, password)
+        if isinstance(link_data, dict) and "error" in link_data:
+            logging.warning(f"TeraboxDL failed ({link_data['error']}), trying direct method...")
+            link_data = await fetch_download_link_direct(url, password)
 
         # Check if error occurred
         if isinstance(link_data, dict) and "error" in link_data:
@@ -494,3 +498,4 @@ def swagger_ui():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
+                    
